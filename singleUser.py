@@ -7,17 +7,11 @@ from numpy.ma import abs
 from util import *
 import math
 
-w = 0.01  # Risk Averseness
-rho = 2.5  # Liquidation Ratio
 txf = 0.04  # Transaction Fee on buying DAI or ETH
 
 # Assets are in individual units
 x_base = np.array([100, 0, 0, 0])
 assets = np.sum(x_base)
-
-# Prices for assets
-dai_price = 1.02
-
 
 def getOptimizationParams():
     mu = np.array([.08, .22, .18, .16, 0.18])  # returns
@@ -33,8 +27,7 @@ def getOptimizationParams():
     return mu, cor, d
 
 
-def optimize(x_start, cdprate, eth_price, dai_price):
-
+def optimize(x_start, rho, cdprate, w, eth_price, dai_price, debug=True):
     # Compute asset worth given ETH Price
     asset_prices = np.array([1, eth_price, dai_price, eth_price])
     assets_dollars = np.multiply(x_start, asset_prices)
@@ -64,32 +57,38 @@ def optimize(x_start, cdprate, eth_price, dai_price):
     prob = Problem(objective, constraints)
     prob.solve(solver=SCS)
 
+    if prob.status != "optimal":
+        return x_start
+
     optimalAssetsInDollars = [float(i) for i in x.value]
-    transactionFees = (optimalAssetsInDollars[1] - xo.value[1]) * txf + (optimalAssetsInDollars[2] - xo.value[2]) * txf
+    transactionFees = abs(optimalAssetsInDollars[1] - xo.value[1]) * txf + abs(
+        optimalAssetsInDollars[2] - xo.value[2]) * txf
     optimalAssetsInDollars[0] -= transactionFees
 
-    print("The optimized portfolio is: ")
-    printAssetsModified(optimalAssetsInDollars)
+    if debug:
+        print("------------------- Iteration ----------------------------")
+        print("CDP Rate: " + str(cdprate) + "\nRisk Averseness: " + str(w))
+        print("TxFees: $%.2f" % transactionFees)
 
-    print("TxFees: $%.2f" % transactionFees)
-    print("Money before txf: $%.2f" % (x.value[0] + x.value[1] + x.value[2] + x.value[3]))
-    print("Money after txf: $%.2f" % (x.value[0] + x.value[1] + x.value[2] + x.value[3] - transactionFees))
+    assets_dollars = optimalAssetsInDollars[:-1]
 
-    assets_dollars[0] = x.value[0]
-    assets_dollars[1] = x.value[1]
-    assets_dollars[2] = x.value[2]
-    assets_dollars[3] = x.value[3]
+    x_start = np.divide(assets_dollars, asset_prices).clip(min=0)
 
-    x_start = np.divide(assets_dollars, asset_prices)
-    printAssets(x_start, eth_price, dai_price, rho)
+    if debug:
+        printAssets(x_start, eth_price, dai_price, rho)
+        print("--------------------- Ends -------------------------------")
 
-    print("This is for a cdp rate of " + str(cdprate) + " and a risk averseness of " + str(w) + "\n")
+    return x_start
 
 
 # Pass asset distribution, ethereum price
 def runLoop(eth_price):
+    w = 0.01  # Risk Averseness
+    rho = 2.5  # Liquidation Ratio
+
     for cdprate in [0.01, 0.02, 0.03, 0.04, 0.05, 0.06, 0.07, 0.08]:
-        optimize(x_base, cdprate, eth_price, dai_price)
+        x = optimize(x_base, rho, cdprate, w, eth_price, 1.02, False)
+
 
 if __name__ == '__main__':
     runLoop(272)

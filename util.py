@@ -10,15 +10,17 @@ def printAssets(x, eth_price, dai_price, rho):
     print("=============================")
 
 
-def printSummary(x, eth_price, dai_price, rho):
+def printSummary(x, eth_price, dai_price, rho, risk_param):
     print("============= Summary ==============")
+    print("Risk Averseness : %.4f" % risk_param)
     print("Holdings in USD : %.4f" % (x[0] + x[1] * eth_price + x[2] * dai_price + x[3] * eth_price))
     print("Debt in USD     : %.4f" % (x[3] * eth_price / dai_price / rho))
     print("====================================")
 
 
-def printColAssets(x_old, x, eth_price, dai_price, rho):
+def printColAssets(x_old, x, eth_price, dai_price, rho, risk_param):
     print("========= Assets Change ============")
+    print("Risk Param  : %.4f" % risk_param)
     print("USD         : %.4f => %.4f" % (x_old[0], x[0]))
     print("ETH         : %.4f => %.4f" % (x_old[1], x[1]))
     print("DAI         : %.4f => %.4f" % (x_old[2], x[2]))
