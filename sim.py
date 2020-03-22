@@ -5,8 +5,7 @@ import scipy as sp
 print("1. USD   2. ETH   3. DAI-Bought   4. Col-ETH  5.DAI-Borrowed")
 # initially equal allocation
 
-
-x_start = np.array([1000, 0, 0, 0])
+x_start = np.array([100, 0, 0, 0])
 money = np.sum(x_start)
 
 xo = Parameter(4, nonneg=True)
@@ -41,9 +40,7 @@ for cdprate in [0.01, 0.02, 0.03, 0.04, 0.05, 0.06, 0.07, 0.08]:
     daiBought = (dai1 - xo[2])
     ethBought = (eth - xo[1])
 
-    txFee = (abs(daiBought) + abs(ethBought)) * txf
-
-    objective = Maximize(mu.T * x - w * quad_form(x, cvr) - cdprate * ceth - txFee)
+    objective = Maximize(mu.T * x - w * quad_form(x, cvr) - cdprate * ceth)
 
     # Figure out how to use abs as a constraint for Maximize
     constraints = [x[0] + x[1] + x[2] + x[3] == money, x >= 0, x[4] == x[3] / rho]
