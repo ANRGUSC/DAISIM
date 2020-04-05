@@ -1,1 +1,6 @@
-Refer to `simulation_util.py, singleUser.py and Simulations.ipynb` for relevant code.
+### Maker Simulation
+- `simulation_util.py` contains general simulation code for DAI price settling.
+- `singleUser.py` contains CVXPY optimization code for a single user.
+- `Simulations.ipynb` contains code for all tests.
+- `util.py, plotter.py` are utility function files.
+- `normal.py/simulation.py` doesn't work as of now.
