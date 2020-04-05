@@ -1,13 +1,9 @@
 from builtins import abs
-
 from cvxpy import *
 import numpy as np
 from numpy.ma import abs
 
 from util import *
-import math
-
-txf = 0.04  # Transaction Fee on buying DAI or ETH
 
 # Assets are in individual units
 x_base = np.array([100, 0, 0, 0])
@@ -27,7 +23,7 @@ def getOptimizationParams():
     return mu, cor, d
 
 
-def optimize(x_start, rho, cdprate, w, eth_price, dai_price, debug=True):
+def optimize(x_start, rho, txf, cdprate, w, eth_price, dai_price, debug=True):
     # Compute asset worth given ETH Price
     asset_prices = np.array([1, eth_price, dai_price, eth_price])
     assets_dollars = np.multiply(x_start, asset_prices)
@@ -87,7 +83,7 @@ def runLoop(eth_price):
     rho = 2.5  # Liquidation Ratio
 
     for cdprate in [0.01, 0.02, 0.03, 0.04, 0.05, 0.06, 0.07, 0.08]:
-        x = optimize(x_base, rho, cdprate, w, eth_price, 1.02, False)
+        x = optimize(x_base, rho, 0.04, cdprate, w, eth_price, 1.02, False)
 
 
 if __name__ == '__main__':

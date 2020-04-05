@@ -1,4 +1,5 @@
 from scipy.stats import truncnorm
+from datetime import datetime
 
 def printAssets(x, eth_price, dai_price, rho):
     print("========= Assets ============")
@@ -39,9 +40,19 @@ def printAssetsModified(x):
     print("DAI Borrowed: %.2f" % x[4])
     print("=============================")
 
+
 def get_truncated_normal(mean=0, sd=1, low=0, upp=10):
     return truncnorm(
         (low - mean) / sd, (upp - mean) / sd, loc=mean, scale=sd)
+
+
+def log(string, filename, flag=False):
+    if flag:
+        f = open("sim-logs/" + filename, "a+")
+        now = datetime.now()
+        current_time = now.strftime("%H:%M:%S")
+        f.write(current_time + " " + string + "\n")
+        f.close()
 
 
 class User:
