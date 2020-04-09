@@ -3,6 +3,7 @@ import multiprocessing as mp
 import sys
 import pickle
 import os
+import numpy as np
 
 
 def runOnThread(sample_size, assets, risk_params, cdpRate, txFee, tests, logger, stddev=False):
@@ -81,8 +82,8 @@ if __name__ == '__main__':
         summaryFilename = "sim-summary.pickle"
         sumfile = open("sim-logs/" + summaryFilename, "wb")
 
-        cdpRates = [0.01 * i for i in range(1, 3)]
-        txf = [0.01 * i for i in range(1, 3)]
+        cdpRates = [0.01 * i for i in range(1, 35)]
+        txf = [0.01 * i for i in range(1,15)]
         tests = 1
         testType = str(sys.argv[2])
         logger = bool(int(sys.argv[3]))

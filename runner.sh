@@ -1,3 +1,8 @@
+echo "preapring working directory"
+rm -rvf test1/*
+rmdir test1
+rm -rvf test2/*
+rmdir test2
 echo "Running Test 1"
 python3 sim.py test normal 1
 mkdir test1

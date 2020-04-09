@@ -114,7 +114,7 @@ class Simulator:
                 log("Total DAI in market %d" % marketDAI, self.filename, self.logger)
 
             X.append(totalMarketDAI)
-            if abs(totalMarketDAI) < 1.5:
+            if abs(totalMarketDAI) < 10:
                 if i % 10 == 0:
                     log("DAI Price settling %.6f" % dai_price,self.filename, self.logger)
                 Y.append(dai_price)
