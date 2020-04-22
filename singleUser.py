@@ -44,7 +44,8 @@ def optimize(x_start, rho, txf, cdprate, w, eth_price, dai_price, debug=True):
     ceth = x[3]
     dai2 = x[4]
 
-    txFee = cvxpy.abs(eth - xo[1]) * txf + cvxpy.abs(x[2] - xo[2]) * txf
+    # include cost of buying ceth as well
+    txFee = cvxpy.abs(eth - xo[1]) * txf + cvxpy.abs(x[2] - xo[2]) * txf + cvxpy.abs(x[3] - xo[3]) * txf
     objective = Maximize(mu.T * x - w * quad_form(x, cvr) - cdprate * ceth - txFee)
 
     # Figure out how to use abs as a constraint for Maximize
@@ -54,11 +55,13 @@ def optimize(x_start, rho, txf, cdprate, w, eth_price, dai_price, debug=True):
     prob.solve(solver=SCS)
 
     if prob.status != "optimal":
-        return x_start
+        x_temp = [i for i in x_start]
+        return x_temp
 
     optimalAssetsInDollars = [float(i) for i in x.value]
     transactionFees = abs(optimalAssetsInDollars[1] - xo.value[1]) * txf + abs(
-        optimalAssetsInDollars[2] - xo.value[2]) * txf
+        optimalAssetsInDollars[2] - xo.value[2]) * txf + abs(optimalAssetsInDollars[3] - xo.value[3]) * txf
+
     optimalAssetsInDollars[0] -= transactionFees
 
     if debug:
@@ -68,23 +71,22 @@ def optimize(x_start, rho, txf, cdprate, w, eth_price, dai_price, debug=True):
 
     assets_dollars = optimalAssetsInDollars[:-1]
 
-    x_start = np.divide(assets_dollars, asset_prices).clip(min=0)
+    x_temp = np.divide(assets_dollars, asset_prices).clip(min=0)
 
     if debug:
-        printAssets(x_start, eth_price, dai_price, rho)
+        printAssets(x_temp, eth_price, dai_price, rho)
         print("--------------------- Ends -------------------------------")
 
-    return x_start
+    return x_temp
 
 
 # Pass asset distribution, ethereum price
 def runLoop(eth_price):
-    w = 0.01  # Risk Averseness
+    w = 0.001  # Risk Averseness
     rho = 2.5  # Liquidation Ratio
 
-    for cdprate in [0.01, 0.02, 0.03, 0.04, 0.05, 0.06, 0.07, 0.08]:
-        x = optimize(x_base, rho, 0.04, cdprate, w, eth_price, 1.02, False)
-
+    for cdprate in [0.01, 0.02, 0.03, 0.04, 0.05, 0.06, 0.07, 0.08, 0.34]:
+        x = optimize(x_base, rho, 0.04, cdprate, w, eth_price, 1, False)
 
 if __name__ == '__main__':
     runLoop(272)

@@ -82,13 +82,13 @@ if __name__ == '__main__':
         summaryFilename = "sim-summary.pickle"
         sumfile = open("sim-logs/" + summaryFilename, "wb")
 
-        cdpRates = [0.01 * i for i in range(1, 35)]
-        txf = [0.01 * i for i in range(1,15)]
+        cdpRates = [0.003 * i for i in range(5, 30)]
+        txf = [0.01 * i for i in range(0, 1)]
         tests = 1
         testType = str(sys.argv[2])
         logger = bool(int(sys.argv[3]))
 
-        runTests(10, cdpRates, txf, tests, testType, logger, sumfile)
+        runTests(50, cdpRates, txf, tests, testType, logger, sumfile)
         sumfile.close()
 
     elif sys.argv[1] == 'single':
