@@ -1,8 +1,5 @@
 from singleUser import optimize
-from util import printColAssets, printSummary, User, get_truncated_normal, log
-
-detailed = True
-err = 0.1
+from util import User, get_truncated_normal, log
 
 
 def getRiskParams(n):

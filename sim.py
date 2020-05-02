@@ -63,9 +63,9 @@ def runTests(sample_size, cdpRates, txf, tests, testType, logger, sumfile):
 
 
 def usage():
-    print("usage: python3 sim.py test type[uniform/normal]")
+    print("usage: python3 sim.py test type[uniform/normal] logger")
     print("OR")
-    print("usage: python3 sim.py single samples cdpRate txf tests type[uniform/normal]")
+    print("usage: python3 sim.py single samples cdpRate txf tests type[uniform/normal] logger")
 
 
 if __name__ == '__main__':
@@ -88,7 +88,7 @@ if __name__ == '__main__':
         testType = str(sys.argv[2])
         logger = bool(int(sys.argv[3]))
 
-        runTests(50, cdpRates, txf, tests, testType, logger, sumfile)
+        runTests(10, cdpRates, txf, tests, testType, logger, sumfile)
         sumfile.close()
 
     elif sys.argv[1] == 'single':

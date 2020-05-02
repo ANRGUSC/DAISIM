@@ -9,6 +9,7 @@ from util import *
 x_base = np.array([100, 0, 0, 0])
 assets = np.sum(x_base)
 
+
 def getOptimizationParams():
     mu = np.array([.08, .22, .18, .16, 0.18])  # returns
 
@@ -87,6 +88,7 @@ def runLoop(eth_price):
 
     for cdprate in [0.01, 0.02, 0.03, 0.04, 0.05, 0.06, 0.07, 0.08, 0.34]:
         x = optimize(x_base, rho, 0.04, cdprate, w, eth_price, 1, False)
+
 
 if __name__ == '__main__':
     runLoop(272)
