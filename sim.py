@@ -13,6 +13,7 @@ def runOnThread(sample_size, assets, risk_params, cdpRate, txFee, tests, logger,
     history = []
 
     for i in range(tests):
+        # eth price set to 140!
         s = Simulator(rho=2.5, cdpRate=cdpRate, txf=txFee, eth_price=140, sample_size=sample_size,
                       initial_distribution=assets, risk_params=risk_params, logger=logger)
         a, b = s.runSimulation()
@@ -82,8 +83,9 @@ if __name__ == '__main__':
         summaryFilename = "sim-summary.pickle"
         sumfile = open("sim-logs/" + summaryFilename, "wb")
 
-        cdpRates = [0.003 * i for i in range(5, 30)]
-        txf = [0.01 * i for i in range(0, 1)]
+        # test inputs for cdpRates and txf
+        cdpRates = [0.01 * i for i in range(5, 15)]
+        txf = [0.01 * i for i in range(0, 5)]
         tests = 1
         testType = str(sys.argv[2])
         logger = bool(int(sys.argv[3]))

@@ -1,6 +1,7 @@
 from scipy.stats import truncnorm
 from datetime import datetime
 
+
 def printAssets(x, eth_price, dai_price, rho):
     print("========= Assets ============")
     print("USD         : %.2f" % x[0])
@@ -53,6 +54,15 @@ def log(string, filename, flag=False):
         current_time = now.strftime("%H:%M:%S")
         f.write(current_time + " " + string + "\n")
         f.close()
+
+
+def printArr(x):
+    x = [round(i, 4) for i in x]
+    print(x)
+
+
+def getWorth(assets, eth_price, dai_price):
+    print("$", assets[0] + assets[1] * eth_price + assets[2] * dai_price + assets[3] * eth_price)
 
 
 class User:

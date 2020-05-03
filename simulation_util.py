@@ -1,5 +1,8 @@
 from singleUser import optimize
-from util import User, get_truncated_normal, log
+from util import User, get_truncated_normal, log, printArr, getWorth
+
+# how often must you log, this is every 5 iterations
+LOG_ITER = 5
 
 
 def getRiskParams(n):
@@ -40,15 +43,6 @@ def price_update(curr):
     return 0.002
 
 
-def printArr(x):
-    x = [round(i, 4) for i in x]
-    print(x)
-
-
-def getWorth(assets, eth_price, dai_price):
-    print("$", assets[0] + assets[1] * eth_price + assets[2] * dai_price + assets[3] * eth_price)
-
-
 # we only control DAI allocation in BUY/SELL
 # mpDAI is the DAI holdings of the market player
 def findActualAllocation(stats, dai_price, eth_price, rho, txfee, mpDAI):
@@ -77,7 +71,9 @@ def findActualAllocation(stats, dai_price, eth_price, rho, txfee, mpDAI):
     for i in range(len(usd_holdings)):
         eth_diff = stats[i][1][1] - stats[i][0][1]
         ceth_diff = stats[i][1][3] - stats[i][0][3]
-        transactionFee = abs(eth_diff) * eth_price * txfee + abs(ceth_diff) * eth_price * txfee
+
+        # modified transaction fees!!
+        transactionFee = abs(eth_diff + ceth_diff) * eth_price * txfee
         usd_holdings[i] = usd_holdings[i] - eth_diff * eth_price - transactionFee
         usd_holdings[i] = usd_holdings[i] - ceth_diff * eth_price
 
@@ -199,12 +195,12 @@ class Simulator:
 
             marketDAI = totalMarketDAI
 
-            if i % 1 == 0:
+            if i % LOG_ITER == 0:
                 log("Total DAI in market %d" % marketDAI, self.filename, self.logger)
 
             X.append(totalMarketDAI)
             if abs(totalMarketDAI) < 10:
-                if i % 1 == 0:
+                if i % LOG_ITER == 0:
                     log("DAI Price settling %.6f" % dai_price, self.filename, self.logger)
                 Y.append(dai_price)
                 break
@@ -215,7 +211,7 @@ class Simulator:
                 dai_price += price_update(totalMarketDAI)
                 Y.append(dai_price)
 
-            if i % 1 == 0:
+            if i % LOG_ITER == 0:
                 log("DAI Price update %.6f" % dai_price, self.filename, self.logger)
 
         log("simulation ends", self.filename, self.logger)

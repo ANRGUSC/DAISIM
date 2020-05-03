@@ -46,7 +46,8 @@ def optimize(x_start, rho, txf, cdprate, w, eth_price, dai_price, debug=True):
     dai2 = x[4]
 
     # include cost of buying ceth as well
-    txFee = cvxpy.abs(eth - xo[1]) * txf + cvxpy.abs(x[2] - xo[2]) * txf + cvxpy.abs(x[3] - xo[3]) * txf
+    # modified transaction fees
+    txFee = cvxpy.abs(x[1] - xo[1] + x[3] - xo[3]) * txf + cvxpy.abs(x[2] - xo[2]) * txf
     objective = Maximize(mu.T * x - w * quad_form(x, cvr) - cdprate * ceth - txFee)
 
     # Figure out how to use abs as a constraint for Maximize
