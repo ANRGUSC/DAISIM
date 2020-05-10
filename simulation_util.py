@@ -45,7 +45,7 @@ def price_update(curr):
 
 # we only control DAI allocation in BUY/SELL
 # mpDAI is the DAI holdings of the market player
-def findActualAllocation(stats, dai_price, eth_price, rho, txfee, mpDAI):
+def findActualAllocation(stats, dai_price, eth_price, rho, txfee):
     buy_dai = []
     sell_dai = []
     all_dai = []
@@ -74,8 +74,9 @@ def findActualAllocation(stats, dai_price, eth_price, rho, txfee, mpDAI):
 
         # modified transaction fees!!
         transactionFee = abs(eth_diff + ceth_diff) * eth_price * txfee
-        usd_holdings[i] = usd_holdings[i] - eth_diff * eth_price - transactionFee
         usd_holdings[i] = usd_holdings[i] - ceth_diff * eth_price
+        usd_holdings[i] = usd_holdings[i] - eth_diff * eth_price
+        usd_holdings[i] = usd_holdings[i] - transactionFee
 
     # buy_dai stores dai buy orders
     # sell_dai stores dai sell orders
@@ -90,12 +91,8 @@ def findActualAllocation(stats, dai_price, eth_price, rho, txfee, mpDAI):
         # sell proportionally!
         # all buy orders met
         sell_dai_actual = [i / dais * daib for i in sell_dai]
-    elif dais < daib <= dais + mpDAI:
-        # execute all sell orders, then meet rest of the demand through mpDAI
-        mpDAI -= (daib - dais)
-    elif daib > dais + mpDAI:
+    elif daib >= dais:
         # all sell orders are met and mpDAI becomes 0
-        mpDAI = 0
         buy_dai_actual = [i / daib * dais for i in buy_dai]
 
     # dai_actual stores total dai actor buys/sells
@@ -127,7 +124,6 @@ class Simulator:
     risk_params = None
     logger = False
     filename = None
-    mpDAI = 0
 
     def __init__(self, rho, cdpRate, txf, eth_price, sample_size, initial_distribution, risk_params, logger=False):
         self.rho = rho
@@ -139,7 +135,6 @@ class Simulator:
         self.risk_params = risk_params
         self.logger = logger
         self.filename = "CDPRate{" + str(self.cdpRate) + "}TXF{" + str(self.txf) + "}.txt"
-        self.mpDAI = 500
         self.market = True
 
         log("Simulation object created: CDP Rate %f, txFee %f, ETH Price %f, Sample Size %d" % (
@@ -149,9 +144,6 @@ class Simulator:
         dai_price = 1
         iters = 500
 
-        X = []
-        Y = []
-
         users = [User(self.initial_distribution[i], self.rho) for i in range(len(self.initial_distribution))]
 
         marketDAI = 0
@@ -159,7 +151,6 @@ class Simulator:
 
         for i in range(iters):
             totalMarketDAI = 0
-
             stats = []
 
             # compute proposed asset allocation
@@ -175,7 +166,7 @@ class Simulator:
 
             # perform buy/sell adjustment, if market player in action
             if self.market:
-                updated_stats = findActualAllocation(stats, dai_price, self.eth_price, self.rho, self.txf, self.mpDAI)
+                updated_stats = findActualAllocation(stats, dai_price, self.eth_price, self.rho, self.txf)
             else:
                 updated_stats = stats
 
@@ -198,18 +189,14 @@ class Simulator:
             if i % LOG_ITER == 0:
                 log("Total DAI in market %d" % marketDAI, self.filename, self.logger)
 
-            X.append(totalMarketDAI)
             if abs(totalMarketDAI) < 10:
                 if i % LOG_ITER == 0:
                     log("DAI Price settling %.6f" % dai_price, self.filename, self.logger)
-                Y.append(dai_price)
                 break
             elif totalMarketDAI < 0:
                 dai_price -= price_update(totalMarketDAI)
-                Y.append(dai_price)
             else:
                 dai_price += price_update(totalMarketDAI)
-                Y.append(dai_price)
 
             if i % LOG_ITER == 0:
                 log("DAI Price update %.6f" % dai_price, self.filename, self.logger)

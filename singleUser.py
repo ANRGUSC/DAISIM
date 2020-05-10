@@ -61,8 +61,9 @@ def optimize(x_start, rho, txf, cdprate, w, eth_price, dai_price, debug=True):
         return x_temp
 
     optimalAssetsInDollars = [float(i) for i in x.value]
-    transactionFees = abs(optimalAssetsInDollars[1] - xo.value[1]) * txf + abs(
-        optimalAssetsInDollars[2] - xo.value[2]) * txf + abs(optimalAssetsInDollars[3] - xo.value[3]) * txf
+    transactionFees = abs(
+        optimalAssetsInDollars[1] - xo.value[1] + optimalAssetsInDollars[3] - xo.value[3]) * txf + abs(
+        optimalAssetsInDollars[2] - xo.value[2]) * txf
 
     optimalAssetsInDollars[0] -= transactionFees
 
