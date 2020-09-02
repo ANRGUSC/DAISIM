@@ -49,7 +49,7 @@ def get_truncated_normal(mean=0, sd=1, low=0, upp=10):
 
 def log(string, filename, flag=False):
     if flag:
-        f = open("sim-logs/" + filename, "a+")
+        f = open(filename, "a+")
         now = datetime.now()
         current_time = now.strftime("%H:%M:%S")
         f.write(current_time + " " + string + "\n")

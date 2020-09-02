@@ -1,4 +1,5 @@
 from singleUser import optimize
+import os
 from util import User, get_truncated_normal, log, printArr, getWorth
 
 # how often must you log, this is every 5 iterations
@@ -122,19 +123,22 @@ class Simulator:
     sample_size = 1
     initial_distribution = None
     risk_params = None
+    logdir = None
     logger = False
     filename = None
 
-    def __init__(self, rho, cdpRate, txf, eth_price, sample_size, initial_distribution, risk_params, logger=False):
+    def __init__(self, rho, cdpRate, txf, eth_price, sample_size, initial_distribution, risk_params, logdir, logger=False):
         self.rho = rho
         self.cdpRate = cdpRate
         self.txf = txf
         self.eth_price = eth_price
         self.sample_size = sample_size
         self.initial_distribution = initial_distribution
+        self.final_distribution = initial_distribution
         self.risk_params = risk_params
         self.logger = logger
-        self.filename = "CDPRate{" + str(self.cdpRate) + "}TXF{" + str(self.txf) + "}.txt"
+        self.logdir = logdir
+        self.filename = os.path.join(logdir, "CDPRate{" + str(self.cdpRate) + "}TXF{" + str(self.txf) + "}.txt")
         self.market = True
 
         log("Simulation object created: CDP Rate %f, txFee %f, ETH Price %f, Sample Size %d" % (
@@ -176,6 +180,7 @@ class Simulator:
                 proposed_assets = stats[j][1]
 
                 users[j].setAssets(new_assets)
+                self.final_distribution[j] = new_assets
 
                 # totalMarketDAI keeps track of total DAI demand! BUY - SELL - MINTED_DAI
                 totalMarketDAI += (proposed_assets[2] - old_assets[2])

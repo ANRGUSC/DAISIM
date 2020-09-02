@@ -48,15 +48,17 @@ def optimize(x_start, rho, txf, cdprate, w, eth_price, dai_price, debug=True):
     # include cost of buying ceth as well
     # modified transaction fees
     txFee = cvxpy.abs(x[1] - xo[1] + x[3] - xo[3]) * txf + cvxpy.abs(x[2] - xo[2]) * txf
-    objective = Maximize(mu.T * x - w * quad_form(x, cvr) - cdprate * ceth - txFee)
+
+    objective = Maximize(mu.T @ x - w * quad_form(x, cvr) - cdprate * ceth - txFee)
 
     # Figure out how to use abs as a constraint for Maximize
     constraints = [x[0] + x[1] + x[2] + x[3] == money, x >= 0, x[4] == x[3] / rho, x[0] >= txFee]
 
     prob = Problem(objective, constraints)
-    prob.solve(solver=SCS)
+    prob.solve(solver=OSQP)
 
     if prob.status != "optimal":
+        print("Not optimal!")
         x_temp = [i for i in x_start]
         return x_temp
 
