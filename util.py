@@ -56,6 +56,11 @@ def log(string, filename, flag=False):
         f.close()
 
 
+def getAssetLogString(assets):
+    return str(round(assets[0], 4)) + " $, " + str(round(assets[1], 4)) + " ETH, " + str(
+        round(assets[2], 4)) + " DAI, " + str(round(assets[2], 4)) + " cETH"
+
+
 def printArr(x):
     x = [round(i, 4) for i in x]
     print(x)

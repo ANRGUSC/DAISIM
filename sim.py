@@ -7,9 +7,6 @@ import argparse
 
 
 def runOnThread(sample_size, assets, risk_params, cdp_rate, tx_fee, tests_per_config, days_per_config, logdir, logger):
-    avg_market_dai = 0
-    avg_dai_price = 0
-
     # eth price linear increment
     # move this to config LINE 3 too, then eliminate days_per_config
     eth_price_per_day = [130 + 10 * i for i in range(0, days_per_config)]
@@ -82,7 +79,7 @@ if __name__ == '__main__':
         "--type",
         type=str,
         default="normal",
-        help="Can be either normal or uniform"
+        help="Can be either normal/uniform/random"
     )
 
     parser.add_argument(

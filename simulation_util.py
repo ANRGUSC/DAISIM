@@ -1,6 +1,7 @@
 from singleUser import optimize
 import os
-from util import User, get_truncated_normal, log, printArr, getWorth
+from util import User, get_truncated_normal, log, getAssetLogString
+import random
 
 # how often must you log, this is every 5 iterations
 LOG_ITER = 5
@@ -12,10 +13,6 @@ def getRiskParams(n):
 
 
 def getAssets(n, dist="normal"):
-    USD = get_truncated_normal(mean=500, sd=166.67, low=0, upp=1000).rvs(n)
-    ETH = get_truncated_normal(mean=1.5, sd=0.5, low=0, upp=3).rvs(n)
-    DAI = get_truncated_normal(mean=500, sd=166.67, low=0, upp=1000).rvs(n)
-
     if dist == "uniform":
         assets = []
         for i in range(0, n // 2):
@@ -25,7 +22,17 @@ def getAssets(n, dist="normal"):
             assets.append([0, 0, 100, 0])
 
         return assets
+    elif dist == "random":
+        USD = [random.randint(0, 750) for i in range(n)]
+        ETH = [random.randint(0, 150) / 100 for i in range(n)]
+        DAI = [random.randint(0, 750) for i in range(n)]
+
+        return [[USD[i], ETH[i], DAI[i], 0] for i in range(n)]
     else:
+        USD = get_truncated_normal(mean=500, sd=166.67, low=0, upp=1000).rvs(n)
+        ETH = get_truncated_normal(mean=1.5, sd=0.5, low=0, upp=3).rvs(n)
+        DAI = get_truncated_normal(mean=500, sd=166.67, low=0, upp=1000).rvs(n)
+
         return [[USD[i], ETH[i], DAI[i], 0] for i in range(n)]
 
 
@@ -127,7 +134,8 @@ class Simulator:
     logger = False
     filename = None
 
-    def __init__(self, rho, cdpRate, txf, eth_price, sample_size, initial_distribution, risk_params, logdir, logger=False):
+    def __init__(self, rho, cdpRate, txf, eth_price, sample_size, initial_distribution, risk_params, logdir,
+                 logger=False):
         self.rho = rho
         self.cdpRate = cdpRate
         self.txf = txf
@@ -143,6 +151,11 @@ class Simulator:
 
         log("Simulation object created: CDP Rate %f, txFee %f, ETH Price %f, Sample Size %d" % (
             cdpRate, txf, eth_price, sample_size), self.filename, self.logger)
+
+        for i in range(len(self.initial_distribution)):
+            log("Investor %d Initial Assets: %s with Risk %f" % (
+                i + 1, getAssetLogString(self.initial_distribution[i]), self.risk_params[i]), self.filename,
+                self.logger)
 
     def runSimulation(self):
         dai_price = 1
