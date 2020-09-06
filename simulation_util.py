@@ -93,6 +93,13 @@ def findActualAllocation(stats, dai_price, eth_price, rho, txfee):
     daib = sum(buy_dai)
     dais = sum(sell_dai)
 
+    # If daib or dais is 0, no buy sell takes place.
+    if daib == 0 or dais == 0:
+        updated_stats = []
+        for i in range(len(stats)):
+            updated_stats.append([stats[i][0], stats[i][0]])
+        return updated_stats
+
     sell_dai_actual = [i for i in sell_dai]
     buy_dai_actual = [i for i in buy_dai]
     if daib < dais != 0:
@@ -126,6 +133,7 @@ class Simulator:
     rho = 2.5
     cdpRate = 0.01
     txf = 0.04
+    run_index = 0
     eth_price = 140
     sample_size = 1
     initial_distribution = None
@@ -133,12 +141,14 @@ class Simulator:
     logdir = None
     logger = False
     filename = None
+    dai_price = 1
 
-    def __init__(self, rho, cdpRate, txf, eth_price, sample_size, initial_distribution, risk_params, logdir,
+    def __init__(self, rho, cdpRate, txf, run_index, eth_price, sample_size, initial_distribution, risk_params, logdir,
                  logger=False):
         self.rho = rho
         self.cdpRate = cdpRate
         self.txf = txf
+        self.run_index = run_index
         self.eth_price = eth_price
         self.sample_size = sample_size
         self.initial_distribution = initial_distribution
@@ -146,7 +156,9 @@ class Simulator:
         self.risk_params = risk_params
         self.logger = logger
         self.logdir = logdir
-        self.filename = os.path.join(logdir, "CDPRate{" + str(self.cdpRate) + "}TXF{" + str(self.txf) + "}.txt")
+        self.filename = os.path.join(logdir,
+                                     "CDPRate{" + str(self.cdpRate) + "}TXF{" + str(self.txf) + "}RUN{" + str(
+                                         self.run_index) + "}.txt")
         self.market = True
 
         log("Simulation object created: CDP Rate %f, txFee %f, ETH Price %f, Sample Size %d" % (
@@ -158,7 +170,7 @@ class Simulator:
                 self.logger)
 
     def runSimulation(self):
-        dai_price = 1
+        dai_price = self.dai_price
         iters = 500
 
         users = [User(self.initial_distribution[i], self.rho) for i in range(len(self.initial_distribution))]
@@ -218,6 +230,11 @@ class Simulator:
 
             if i % LOG_ITER == 0:
                 log("DAI Price update %.6f" % dai_price, self.filename, self.logger)
+
+        for i in range(len(self.final_distribution)):
+            log("Investor %d Final Assets: %s" % (
+                i + 1, getAssetLogString(self.final_distribution[i])), self.filename,
+                self.logger)
 
         log("simulation ends", self.filename, self.logger)
         return dai_price, marketDAI
