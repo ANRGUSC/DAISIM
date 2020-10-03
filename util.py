@@ -75,8 +75,6 @@ class User:
     ETH = 0
     DAI = 0
     cETH = 0
-    initialDAIPrice = 0
-    initialETHPrice = 0
     rho = 0
 
     def __init__(self, assets, rho):

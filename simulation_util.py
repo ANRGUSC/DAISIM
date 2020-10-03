@@ -1,18 +1,23 @@
-from singleUser import optimize
+from single_user import optimize
 import os
 from util import User, get_truncated_normal, log, getAssetLogString
 import random
 
 # how often must you log, this is every 5 iterations
-LOG_ITER = 5
+LOG_ITER = 10
 
 
-def getRiskParams(n):
+def get_risk_params(n):
     X = get_truncated_normal(mean=0.0065, sd=0.0035, low=0.001, upp=0.05)
-    return sorted(X.rvs(n))
+
+    risk_params = [0.001493, 0.004047, 0.005405, 0.005829, 0.006224, 0.007901, 0.007963, 0.00927, 0.009424, 0.01388]
+    risk_params_actual = [risk_params[i % 10] for i in range(n)]
+
+    # return sorted(X.rvs(n))
+    return risk_params_actual
 
 
-def getAssets(n, dist="normal"):
+def get_assets(n, dist="normal"):
     if dist == "uniform":
         assets = []
         for i in range(0, n // 2):
@@ -23,17 +28,17 @@ def getAssets(n, dist="normal"):
 
         return assets
     elif dist == "random":
-        USD = [random.randint(0, 750) for i in range(n)]
-        ETH = [random.randint(0, 150) / 100 for i in range(n)]
-        DAI = [random.randint(0, 750) for i in range(n)]
+        usd = [random.randint(0, 750) for i in range(n)]
+        eth = [random.randint(0, 150) / 100 for i in range(n)]
+        dai = [random.randint(0, 750) for i in range(n)]
 
-        return [[USD[i], ETH[i], DAI[i], 0] for i in range(n)]
+        return [[usd[i], eth[i], dai[i], 0] for i in range(n)]
     else:
-        USD = get_truncated_normal(mean=500, sd=166.67, low=0, upp=1000).rvs(n)
-        ETH = get_truncated_normal(mean=1.5, sd=0.5, low=0, upp=3).rvs(n)
-        DAI = get_truncated_normal(mean=500, sd=166.67, low=0, upp=1000).rvs(n)
+        usd = get_truncated_normal(mean=500, sd=166.67, low=0, upp=1000).rvs(n)
+        eth = get_truncated_normal(mean=1.5, sd=0.5, low=0, upp=3).rvs(n)
+        dai = get_truncated_normal(mean=500, sd=166.67, low=0, upp=1000).rvs(n)
 
-        return [[USD[i], ETH[i], DAI[i], 0] for i in range(n)]
+        return [[usd[i], eth[i], dai[i], 0] for i in range(n)]
 
 
 def price_update(curr):
@@ -51,28 +56,26 @@ def price_update(curr):
     return 0.002
 
 
-# we only control DAI allocation in BUY/SELL
-# mpDAI is the DAI holdings of the market player
-def findActualAllocation(stats, dai_price, eth_price, rho, txfee):
+def find_actual_allocation(stats, dai_price, eth_price, rho, txfee):
     buy_dai = []
     sell_dai = []
     all_dai = []
     usd_holdings = []
 
     for i in stats:
-        daidiff = i[1][2] - i[0][2]
+        dai_diff = i[1][2] - i[0][2]
 
         # USD I hold initially
         usd_holdings.append(i[0][0])
 
-        if daidiff > 0:
-            buy_dai.append(daidiff)
+        if dai_diff > 0:
+            buy_dai.append(dai_diff)
             sell_dai.append(0)
         else:
             buy_dai.append(0)
-            sell_dai.append(abs(daidiff))
+            sell_dai.append(abs(dai_diff))
 
-        all_dai.append(daidiff)
+        all_dai.append(dai_diff)
 
     # assume all ETH is bought sold according to the optimizer, also add transaction fee
     # we also pay a transaction fee for CETH because we need to buy ETH to get CETH. Assume that ETH -> CETH is free.
@@ -81,10 +84,10 @@ def findActualAllocation(stats, dai_price, eth_price, rho, txfee):
         ceth_diff = stats[i][1][3] - stats[i][0][3]
 
         # modified transaction fees!!
-        transactionFee = abs(eth_diff + ceth_diff) * eth_price * txfee
+        transaction_fee = abs(eth_diff + ceth_diff) * eth_price * txfee
         usd_holdings[i] = usd_holdings[i] - ceth_diff * eth_price
         usd_holdings[i] = usd_holdings[i] - eth_diff * eth_price
-        usd_holdings[i] = usd_holdings[i] - transactionFee
+        usd_holdings[i] = usd_holdings[i] - transaction_fee
 
     # buy_dai stores dai buy orders
     # sell_dai stores dai sell orders
@@ -169,17 +172,18 @@ class Simulator:
                 i + 1, getAssetLogString(self.initial_distribution[i]), self.risk_params[i]), self.filename,
                 self.logger)
 
-    def runSimulation(self):
+    def run_simulation(self):
         dai_price = self.dai_price
-        iters = 500
+        # dai_price = 1
+        iterations = 500
 
         users = [User(self.initial_distribution[i], self.rho) for i in range(len(self.initial_distribution))]
 
-        marketDAI = 0
-        log("simulation start with %d" % iters, self.filename, self.logger)
+        market_dai = 0
+        log("simulation start with %d" % iterations, self.filename, self.logger)
 
-        for i in range(iters):
-            totalMarketDAI = 0
+        for i in range(iterations):
+            total_market_dai = 0
             stats = []
 
             # compute proposed asset allocation
@@ -195,7 +199,7 @@ class Simulator:
 
             # perform buy/sell adjustment, if market player in action
             if self.market:
-                updated_stats = findActualAllocation(stats, dai_price, self.eth_price, self.rho, self.txf)
+                updated_stats = find_actual_allocation(stats, dai_price, self.eth_price, self.rho, self.txf)
             else:
                 updated_stats = stats
 
@@ -207,26 +211,26 @@ class Simulator:
                 users[j].setAssets(new_assets)
                 self.final_distribution[j] = new_assets
 
-                # totalMarketDAI keeps track of total DAI demand! BUY - SELL - MINTED_DAI
-                totalMarketDAI += (proposed_assets[2] - old_assets[2])
+                # total_market_dai keeps track of total DAI demand! BUY - SELL - MINTED_DAI
+                total_market_dai += (proposed_assets[2] - old_assets[2])
                 cdpDAI = (new_assets[3] - old_assets[3]) * self.eth_price / dai_price / self.rho
 
                 # I think selling DAI equates to the same effect produced by CDP DAI generation
-                totalMarketDAI -= cdpDAI
+                total_market_dai -= cdpDAI
 
-            marketDAI = totalMarketDAI
+            market_dai = total_market_dai
 
             if i % LOG_ITER == 0:
-                log("Total DAI in market %d" % marketDAI, self.filename, self.logger)
+                log("Total DAI in market %d" % market_dai, self.filename, self.logger)
 
-            if abs(totalMarketDAI) < 10:
+            if abs(total_market_dai) < 10:
                 if i % LOG_ITER == 0:
                     log("DAI Price settling %.6f" % dai_price, self.filename, self.logger)
                 break
-            elif totalMarketDAI < 0:
-                dai_price -= price_update(totalMarketDAI)
+            elif total_market_dai < 0:
+                dai_price -= price_update(total_market_dai)
             else:
-                dai_price += price_update(totalMarketDAI)
+                dai_price += price_update(total_market_dai)
 
             if i % LOG_ITER == 0:
                 log("DAI Price update %.6f" % dai_price, self.filename, self.logger)
@@ -237,4 +241,4 @@ class Simulator:
                 self.logger)
 
         log("simulation ends", self.filename, self.logger)
-        return dai_price, marketDAI
+        return dai_price, market_dai
