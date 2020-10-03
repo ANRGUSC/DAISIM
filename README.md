@@ -1,15 +1,18 @@
 ### Maker DAO Simulation
 The repository contains code for simulating a population of investors in the DAI Ecosystem 
 
-- `simulation_util.py` contains general simulation code for DAI price settling.
-- `singleUser.py` contains CVXPY optimization code for a single user.
-- `Plotter.ipynb` helps visualize results.
-- `runner.sh` is a test runner.
+- `sim.py` is a CLI to run a single market simulation using a test config as input.
+- `simulation_util.py` contains general market simulation code for obtaining DAI settling price.
+- `single_user.py` contains CVXPY optimization code for an optimal investor.
+- `input_generator.py` is a CLI to generate test configs for a factorial experiment.
+- `test_runner.py` is a test runner to run a multiple market simulations using multiple test configs.
+- `plot_gen.py` generates multiple plots for a single simulation output.
 - `util.py` contains all utility functions.
 
 ### Setup
-- Install `cvxpy, pickle, numpy, scipy, plotly`
+- Install `cvxpy, pickle, numpy, scipy, matplotlib`
 
+### [DEPRECATED]
 ### Running Tests
 - `python3 sim.py test type[uniform/normal] logger`
     - Runs with sample size set as 10.  
