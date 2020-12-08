@@ -15,7 +15,7 @@ def run_on_thread(sample_size, assets, risk_params, cdp_rate, tx_fee, run_index,
 
     assert (len(eth_price_per_day) >= days_per_config)
 
-    asset_history = [assets]
+    asset_history = [assets[:]]
     cur_assets = assets
     cur_dai_price = 1
     for day in range(0, days_per_config):
@@ -118,7 +118,7 @@ if __name__ == '__main__':
     parser.add_argument(
         "--log",
         type=bool,
-        default=False,
+        default=True,
         help="Logs simulation results in specified directory"
     )
 
