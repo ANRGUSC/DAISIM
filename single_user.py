@@ -9,6 +9,7 @@ from util import *
 x_base = np.array([100, 0, 0, 0])
 assets = np.sum(x_base)
 
+debug = False
 
 def get_optimization_params():
     mu = np.array([.08, .22, .18, .16, 0.18])  # returns
@@ -96,4 +97,4 @@ def run_loop(eth_price):
 
 
 if __name__ == '__main__':
-    run_loop(272)
+    run_loop(130)

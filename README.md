@@ -1,5 +1,5 @@
-### Maker DAO Simulation
-The repository contains code for simulating a population of investors in the DAI Ecosystem 
+### DAISIM
+The repository contains code for simulating a population of investors in the DAI Ecosystem. 
 
 - `sim.py` is a CLI to run a single MAKER DAO market simulation using a test config as input.
 - `simulation_util.py` contains MAKER DAO market simulation code.
@@ -10,7 +10,7 @@ The repository contains code for simulating a population of investors in the DAI
 - `input_generator.py` is a CLI to generate test configs for a factorial experiment.
 
 ### Setup
-- Install `cvxpy, pickle, numpy, scipy, matplotlib`
+- Install `cvxpy, pickle, numpy, scipy, matplotlib, tikzplotlib`
 
 ### Market Simulations
 - A single market simulation takes in some inputs,
@@ -20,7 +20,7 @@ The repository contains code for simulating a population of investors in the DAI
     - `dai_price`: Initial Price of DAI. Set to $1.
     - `num_investors`: Number of optimal investors participating in the market simulation.
     - `assets_and_risk`: Initial asset holdings and risk preference for all investors. This is a vector of size `(num_investors,5)` with each 
-    investors assets_and_risk a vector `[USD, ETH, DAI, cETH, risk_param]`. A lower numerical value for risk translates to high risk.
+    investors `assets_and_risk` a vector `[USD, ETH, DAI, cETH, risk_param]`. A lower numerical value for risk translates to high risk.
 
 - A sample config file is shown below for a MAKER DAO market simulation for a set of `tx_fee` and `cdp_rate` combinations. The config
 will be used to run 5 * 3 = 15 single market simulations with the given asset allocations and risk parameters for 4 investors.

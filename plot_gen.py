@@ -1,19 +1,16 @@
 import pickle
 from collections import defaultdict
 import matplotlib.pyplot as mp
-import matplotlib
 import os
 import numpy as np
 import argparse
 from single_user import get_optimization_params
+import tikzplotlib
 
 CDP_ENABLE = True
 TXF_ENABLE = True
-DAYS_ENABLE = False
+DAYS_ENABLE = True
 STACKED_ENABLE = True
-
-matplotlib.rcParams['figure.figsize'] = [10, 10]
-
 
 # Plotter Functions here
 def matplotlib_z_with_y_legend(x, y, z, xtitle, ytitle, ztitle, plotname):
@@ -239,10 +236,10 @@ def generate_asset_curve(cdp_axis, txf_axis, dai_price_history_axis, asset_histo
                 os.makedirs(os.path.join(cur_dir, "plots", "asset_distribution_fixed_cdp"), exist_ok=True)
                 os.makedirs(os.path.join(cur_dir, "plots", "asset_returns_fixed_cdp"), exist_ok=True)
 
-                hi_risk_inv = 0
-                lo_risk_inv = 1
+                hi_risk_inv = 6
+                lo_risk_inv = 9
 
-                inv_ids = [(lo_risk_inv, "lo_risk"), (hi_risk_inv, "hi_risk")]
+                inv_ids = [(lo_risk_inv, "lo_risk", "Low Risk"), (hi_risk_inv, "hi_risk", "High Risk")]
 
                 for inv_id in inv_ids:
                     dai_price = daip_cdp[cdp_rate]
@@ -274,20 +271,21 @@ def generate_asset_curve(cdp_axis, txf_axis, dai_price_history_axis, asset_histo
                     mp.plot(ind, usd_eth_dai_ceth_bars, marker='D')
 
                     mp.xticks(ind, [str(i / 100) for i in ind])
-                    mp.xlabel('Tx Fee')
-                    mp.ylabel('Cummulative Assets in USD')
-                    mp.legend((p1[0], p2[0], p3[0], p4[0]), ('USD', 'ETH', 'DAI', 'cETH'), loc='upper right')
+                    mp.xlabel("Tx Fee")
+                    mp.ylabel("Cummulative Assets in USD")
+                    mp.legend((p1[0], p2[0], p3[0], p4[0]), ("USD", "ETH", "DAI", "cETH"), loc='upper right')
 
-                    mp.title('Asset Distribution for CDP Rate ' + str(cdp_rate))
+                    mp.title(r'Asset Distribution v/s Tx Fee for CDP Rate ' + str(cdp_rate) + " (" + inv_id[2] + ")")
 
                     plot_name = os.path.join(cur_dir, "plots", "asset_distribution_fixed_cdp", inv_id[1] + "_cdp_rate_" + str(cdp_rate) + "_run_" + str(run_id))
-                    fig.savefig(plot_name + '.jpeg', facecolor=fig.get_facecolor())
+                    fig.savefig(plot_name + '.jpeg', facecolor=fig.get_facecolor(), bbox_inches='tight')
+                    tikzplotlib.save(plot_name + ".tex")
                     mp.clf()
 
-                    usd_returns = [l * (1 + return_rate[0]) for l in usd_bars]
-                    eth_returns = [l * (1 + return_rate[1]) for l in eth_bars]
-                    dai_returns = [l * (1 + return_rate[2]) for l in dai_bars]
-                    ceth_returns = [l * (1 + return_rate[3]) for l in ceth_bars]
+                    usd_returns = [l * (0 + return_rate[0]) for l in usd_bars]
+                    eth_returns = [l * (0 + return_rate[1]) for l in eth_bars]
+                    dai_returns = [l * (0 + return_rate[2]) for l in dai_bars]
+                    ceth_returns = [l * (0 + return_rate[3]) for l in ceth_bars]
 
                     usd_eth_returns = np.add(usd_returns, eth_returns).tolist()
                     usd_eth_dai_returns = np.add(usd_eth_returns, dai_returns).tolist()
@@ -312,10 +310,11 @@ def generate_asset_curve(cdp_axis, txf_axis, dai_price_history_axis, asset_histo
                     mp.ylabel('Asset Returns in USD')
                     mp.legend((p1[0], p2[0], p3[0], p4[0]), ('USD', 'ETH', 'DAI', 'cETH'), loc='upper right')
 
-                    mp.title('Asset Returns for CDP Rate ' + str(cdp_rate))
+                    mp.title('Asset Returns v/s Tx Fee for CDP Rate ' + str(cdp_rate)+ " (" + inv_id[2] + ")")
 
                     plot_name = os.path.join(cur_dir, "plots", "asset_returns_fixed_cdp", inv_id[1] + "_cdp_rate_" + str(cdp_rate) + "_run_" + str(run_id))
-                    fig.savefig(plot_name + '.jpeg', facecolor=fig.get_facecolor())
+                    fig.savefig(plot_name + '.jpeg', facecolor=fig.get_facecolor(), bbox_inches='tight')
+                    tikzplotlib.save(plot_name + ".tex")
                     mp.clf()
 
 
@@ -362,10 +361,10 @@ def generate_asset_curve(cdp_axis, txf_axis, dai_price_history_axis, asset_histo
                 os.makedirs(os.path.join(cur_dir, "plots", "asset_returns_fixed_txf"), exist_ok=True)
 
 
-                hi_risk_inv = 0
-                lo_risk_inv = 1
+                hi_risk_inv = 6
+                lo_risk_inv = 9
 
-                inv_ids = [(lo_risk_inv, "lo_risk"), (hi_risk_inv, "hi_risk")]
+                inv_ids = [(lo_risk_inv, "lo_risk", "Low Risk"), (hi_risk_inv, "hi_risk", "High Risk")]
 
                 for inv_id in inv_ids:
                     dai_price = daip_txf[tx_fee]
@@ -406,16 +405,17 @@ def generate_asset_curve(cdp_axis, txf_axis, dai_price_history_axis, asset_histo
                     mp.ylabel('Cummulative Assets in USD')
                     mp.legend((p1[0], p2[0], p3[0], p4[0]), ('USD', 'ETH', 'DAI', 'cETH'), loc='upper right')
 
-                    mp.title('Asset Distribution for Tx Fee ' + str(tx_fee))
+                    mp.title('Asset Distribution v/s CDP Rate for Tx Fee ' + str(tx_fee) + " (" + inv_id[2] + ")")
 
                     plot_name = os.path.join(cur_dir, "plots", "asset_distribution_fixed_txf", inv_id[1] + "_tx_fee_" + str(tx_fee) + "_run_" + str(run_id))
-                    fig.savefig(plot_name + '.jpeg', facecolor=fig.get_facecolor())
+                    fig.savefig(plot_name + '.jpeg', facecolor=fig.get_facecolor(), bbox_inches='tight')
+                    tikzplotlib.save(plot_name + ".tex")
                     mp.clf()
 
-                    usd_returns = [l * (1 + return_rate[0]) for l in usd_bars]
-                    eth_returns = [l * (1 + return_rate[1]) for l in eth_bars]
-                    dai_returns = [l * (1 + return_rate[2]) for l in dai_bars]
-                    ceth_returns = [l * (1 + return_rate[3]) for l in ceth_bars]
+                    usd_returns = [l * (0 + return_rate[0]) for l in usd_bars]
+                    eth_returns = [l * (0 + return_rate[1]) for l in eth_bars]
+                    dai_returns = [l * (0 + return_rate[2]) for l in dai_bars]
+                    ceth_returns = [l * (0 + return_rate[3]) for l in ceth_bars]
 
                     usd_eth_returns = np.add(usd_returns, eth_returns).tolist()
                     usd_eth_dai_returns = np.add(usd_eth_returns, dai_returns).tolist()
@@ -440,10 +440,11 @@ def generate_asset_curve(cdp_axis, txf_axis, dai_price_history_axis, asset_histo
                     mp.ylabel('Asset Returns in USD')
                     mp.legend((p1[0], p2[0], p3[0], p4[0]), ('USD', 'ETH', 'DAI', 'cETH'), loc='upper right')
 
-                    mp.title('Asset Returns for Tx Fee ' + str(tx_fee))
+                    mp.title('Asset Returns v/s CDP Rate for Tx Fee ' + str(tx_fee) + " (" + inv_id[2] + ")")
 
                     plot_name = os.path.join(cur_dir, "plots", "asset_returns_fixed_txf", inv_id[1] + "_tx_fee_" + str(tx_fee) + "_run_" + str(run_id))
-                    fig.savefig(plot_name + '.jpeg', facecolor=fig.get_facecolor())
+                    fig.savefig(plot_name + '.jpeg', facecolor=fig.get_facecolor(), bbox_inches='tight')
+                    tikzplotlib.save(plot_name + ".tex")
                     mp.clf()
 
 

@@ -3,18 +3,13 @@ import os
 from util import User, get_truncated_normal, log, getAssetLogString
 import random
 
-# how often must you log, this is every 5 iterations
+# how often must you log, this is every 10 iterations
 LOG_ITER = 10
 
 
 def get_risk_params(n):
-    X = get_truncated_normal(mean=0.0065, sd=0.0035, low=0.001, upp=0.05)
-
-    risk_params = [0.001493, 0.004047, 0.005405, 0.005829, 0.006224, 0.007901, 0.007963, 0.00927, 0.009424, 0.01388]
-    risk_params_actual = [risk_params[i % 10] for i in range(n)]
-
-    # return sorted(X.rvs(n))
-    return risk_params_actual
+    risk_params = [0.003, 0.01]
+    return [risk_params[i % 2] for i in range(n)]
 
 
 def get_assets(n, dist="normal"):
@@ -134,10 +129,10 @@ def find_actual_allocation(stats, dai_price, eth_price, rho, txfee):
 
 class Simulator:
     rho = 2.5
-    cdpRate = 0.01
-    txf = 0.04
+    cdpRate = 0.06
+    txf = 0.01
     run_index = 0
-    eth_price = 140
+    eth_price = 130
     sample_size = 1
     initial_distribution = None
     risk_params = None
