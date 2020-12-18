@@ -1,4 +1,4 @@
-### DAISIM
+# DAISIM
 The repository contains code for simulating a population of investors in the DAI Ecosystem. 
 
 - `sim.py` is a CLI to run a single MAKER DAO market simulation using a test config as input.
@@ -9,8 +9,8 @@ The repository contains code for simulating a population of investors in the DAI
 - `util.py` contains all utility functions.
 - `input_generator.py` is a CLI to generate test configs for a factorial experiment.
 
-### Setup
 - Install `cvxpy, pickle, numpy, scipy, matplotlib, tikzplotlib`
+### Setup
 
 ### Market Simulations
 - A single market simulation takes in some inputs,
@@ -41,4 +41,3 @@ will be used to run 5 * 3 = 15 single market simulations with the given asset al
     - `python3 plot_gen.py --data path/to/log/directory/sim-summary.pickle` : Running this generates several useful plots for the simulation. All generated plots would show up in a `plots`
     directory under the log directory.
     - `python3 test_runner.py --logdir /path/to/log/directory --configdir /path/to/config/directory` : Running this performs market simulation with several test configs under a single directory i.e configdir.
-
