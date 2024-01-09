@@ -25,7 +25,7 @@ def get_optimization_params():
     return mu, cor, d
 
 
-def optimize(x_start, rho, txf, cdprate, w, eth_price, dai_price, debug=True):
+def optimize(belief_factor, x_start, rho, txf, cdprate, w, eth_price, dai_price, debug=True):
     # Compute asset worth given ETH Price
     asset_prices = np.array([1, eth_price, dai_price, eth_price])
     assets_dollars = np.multiply(x_start, asset_prices)
@@ -51,8 +51,8 @@ def optimize(x_start, rho, txf, cdprate, w, eth_price, dai_price, debug=True):
     tx_fee = cvxpy.abs(x[1] - xo[1] + x[3] - xo[3]) * txf + cvxpy.abs(x[2] - xo[2]) * txf
 
     # objective function
-    objective = Maximize(mu.T @ x - w * quad_form(x, cvr) - cdprate * ceth - tx_fee)
-
+    objective = Maximize(mu.T @ x - w * quad_form(x, cvr) - cdprate * ceth - tx_fee + belief_factor*(dai2/dai_price)*(dai_price-1) - belief_factor*(dai1/dai_price)*(dai_price-1))
+    
     # Figure out how to use abs as a constraint for Maximize
     constraints = [x[0] + x[1] + x[2] + x[3] == money, x >= 0, x[4] == x[3] / rho, x[0] >= tx_fee]
 
