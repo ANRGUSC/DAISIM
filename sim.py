@@ -8,7 +8,7 @@ ASSETS = None
 RISK = None
 
 
-def run_on_thread(sample_size, assets, risk_params, cdp_rate, tx_fee, run_index, eth_price_per_day, days_per_config,
+def run_on_thread(sample_size, belief_factor, assets, risk_params, cdp_rate, tx_fee, run_index, eth_price_per_day, days_per_config,
                   logdir, logger):
     dai_price_history = []
     market_dai_history = []
@@ -19,7 +19,7 @@ def run_on_thread(sample_size, assets, risk_params, cdp_rate, tx_fee, run_index,
     cur_assets = assets
     cur_dai_price = 1
     for day in range(0, days_per_config):
-        s = Simulator(rho=2.5, cdpRate=cdp_rate, txf=tx_fee, run_index=run_index, eth_price=eth_price_per_day[day],
+        s = Simulator(belief_factor=belief_factor, rho=2.5, cdpRate=cdp_rate, txf=tx_fee, run_index=run_index, eth_price=eth_price_per_day[day],
                       sample_size=sample_size,
                       initial_distribution=cur_assets, risk_params=risk_params, logdir=logdir, logger=logger)
         s.dai_price = cur_dai_price
@@ -30,7 +30,7 @@ def run_on_thread(sample_size, assets, risk_params, cdp_rate, tx_fee, run_index,
         cur_dai_price = dai_price
 
         # store asset_history and dump into a separate pickle file
-        asset_history.append(cur_assets)
+        asset_history.append(cur_assets[:])
 
         dai_price_history.append(dai_price)
         market_dai_history.append(market_dai)
@@ -49,7 +49,7 @@ def generate_assets_and_risk(sample_size, test_type, runs):
     return assets_runs, risk_params
 
 
-def run_tests(sample_size, cdp_rates, tx_fees, runs, eth_price_per_day, days_per_config, test_type, logdir, logger,
+def run_tests(sample_size, belief_factor, cdp_rates, tx_fees, runs, eth_price_per_day, days_per_config, test_type, logdir, logger,
               sumfile):
     # Get number of CPUs
     cpus = mp.cpu_count()
@@ -68,7 +68,7 @@ def run_tests(sample_size, cdp_rates, tx_fees, runs, eth_price_per_day, days_per
         for cdp_rate in cdp_rates:
             for run in range(runs):
                 args.append(
-                    (sample_size, assets_runs[run], risk_params, cdp_rate, tx_fee, run, eth_price_per_day,
+                    (sample_size, belief_factor, assets_runs[run], risk_params, cdp_rate, tx_fee, run, eth_price_per_day,
                      days_per_config, logdir, logger))
 
     results = pool.starmap(run_on_thread, args)
@@ -185,6 +185,7 @@ if __name__ == '__main__':
 
     cdp_rates = [float(cdp_config[2]) * i for i in range(int(cdp_config[0]), int(cdp_config[1]))]
     tx_fees = [float(txf_config[2]) * i for i in range(int(txf_config[0]), int(txf_config[1]))]
+    belief_factor = float(config_lines[-1])
 
     print("Input Parameters for Test")
     print("--investors", args.investors)
@@ -195,7 +196,7 @@ if __name__ == '__main__':
     print("--logidr", args.logdir)
     print("--config", args.config)
 
-    run_tests(args.investors, cdp_rates, tx_fees, args.runs, eth_price_per_day, args.days_per_config, args.type,
+    run_tests(args.investors, belief_factor, cdp_rates, tx_fees, args.runs, eth_price_per_day, args.days_per_config, args.type,
               args.logdir,
               args.log, sumfile)
     sumfile.close()

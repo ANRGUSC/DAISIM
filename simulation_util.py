@@ -40,7 +40,7 @@ def price_update(curr):
     temp = abs(curr)
 
     if temp > 500:
-        return 0.05
+        return 0.03 # modified
     elif temp > 250:
         return 0.01
     elif temp > 50:
@@ -48,7 +48,7 @@ def price_update(curr):
     elif temp > 5:
         return 0.001
 
-    return 0.002
+    return 0.001 # modified
 
 
 def find_actual_allocation(stats, dai_price, eth_price, rho, txfee):
@@ -128,6 +128,7 @@ def find_actual_allocation(stats, dai_price, eth_price, rho, txfee):
 
 
 class Simulator:
+    belief_factor = 10
     rho = 2.5
     cdpRate = 0.06
     txf = 0.01
@@ -141,8 +142,9 @@ class Simulator:
     filename = None
     dai_price = 1
 
-    def __init__(self, rho, cdpRate, txf, run_index, eth_price, sample_size, initial_distribution, risk_params, logdir,
+    def __init__(self, belief_factor, rho, cdpRate, txf, run_index, eth_price, sample_size, initial_distribution, risk_params, logdir,
                  logger=False):
+        self.belief_factor = belief_factor
         self.rho = rho
         self.cdpRate = cdpRate
         self.txf = txf
@@ -159,8 +161,8 @@ class Simulator:
                                          self.run_index) + "}.txt")
         self.market = True
 
-        log("Simulation object created: CDP Rate %f, txFee %f, ETH Price %f, Sample Size %d" % (
-            cdpRate, txf, eth_price, sample_size), self.filename, self.logger)
+        log("Simulation object created: CDP Rate %f, txFee %f, ETH Price %f, Sample Size %d, Belief Factor %d" % (
+            cdpRate, txf, eth_price, sample_size, belief_factor), self.filename, self.logger)
 
         for i in range(len(self.initial_distribution)):
             log("Investor %d Initial Assets: %s with Risk %f" % (
@@ -170,7 +172,7 @@ class Simulator:
     def run_simulation(self):
         dai_price = self.dai_price
         # dai_price = 1
-        iterations = 500
+        iterations = 100
 
         users = [User(self.initial_distribution[i], self.rho) for i in range(len(self.initial_distribution))]
 
@@ -185,7 +187,7 @@ class Simulator:
             for j in range(self.sample_size):
                 risk_param = self.risk_params[j]
 
-                proposed_assets = optimize(users[j].getAssets(), self.rho, self.txf, self.cdpRate, risk_param,
+                proposed_assets = optimize(self.belief_factor, users[j].getAssets(), self.rho, self.txf, self.cdpRate, risk_param,
                                            self.eth_price,
                                            dai_price, False)
 
@@ -218,14 +220,15 @@ class Simulator:
             if i % LOG_ITER == 0:
                 log("Total DAI in market %d" % market_dai, self.filename, self.logger)
 
+            if total_market_dai < 0:
+                dai_price -= price_update(total_market_dai)
+            else:
+                dai_price += price_update(total_market_dai)
+
             if abs(total_market_dai) < 10:
                 if i % LOG_ITER == 0:
                     log("DAI Price settling %.6f" % dai_price, self.filename, self.logger)
                 break
-            elif total_market_dai < 0:
-                dai_price -= price_update(total_market_dai)
-            else:
-                dai_price += price_update(total_market_dai)
 
             if i % LOG_ITER == 0:
                 log("DAI Price update %.6f" % dai_price, self.filename, self.logger)

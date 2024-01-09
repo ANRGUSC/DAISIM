@@ -106,6 +106,8 @@ def generate_configs(args):
 
         investor_count_line = [str(investors)]
 
+        belief_factor_line = [str(10)] # TODO: make this configurable
+
         # If Risk Parameter Testing is enabled, we generate all risk bitmasks for a particular fact_param.
         if RISK_PARAM_TESTING:
             for risk_bitmask in risk_bitmasks:
@@ -125,7 +127,7 @@ def generate_configs(args):
                 infile = open(filename, "w+")
 
                 # Write to config file
-                for line in lines + investor_count_line + asset_distribution_lines:
+                for line in lines + investor_count_line + asset_distribution_lines + belief_factor_line:
                     infile.write(line + "\n")
                 infile.close()
         else:
@@ -139,7 +141,7 @@ def generate_configs(args):
                 infile = open(filename, "w+")
 
                 # Write to config file
-                for line in lines + investor_count_line + asset_distribution_lines:
+                for line in lines + investor_count_line + asset_distribution_lines + belief_factor_line:
                     infile.write(line + "\n")
                 infile.close()
 

@@ -21,6 +21,7 @@ The repository contains code for simulating a population of investors in the DAI
     - `num_investors`: Number of optimal investors participating in the market simulation.
     - `assets_and_risk`: Initial asset holdings and risk preference for all investors. This is a vector of size `(num_investors,5)` with each 
     investors `assets_and_risk` a vector `[USD, ETH, DAI, cETH, risk_param]`. A lower numerical value for risk translates to high risk.
+    - `belief_factor`: A constant indicating the strength of investors' belief that the price of DAI is 1. 
 
 - A sample config file is shown below for a MAKER DAO market simulation for a set of `tx_fee` and `cdp_rate` combinations. The config
 will be used to run 5 * 3 = 15 single market simulations with the given asset allocations and risk parameters for 4 investors.
@@ -33,10 +34,11 @@ will be used to run 5 * 3 = 15 single market simulations with the given asset al
 822.4563 2.0845 707.5078 0.0 0.003            // Investor#1 Assets, Risk = 0.003
 399.4434 1.8082 459.3569 0.0 0.01             // Investor#2 Assets, Risk = 0.01
 533.1002 2.3154 333.1751 0.0 0.01             // Investor#3 Assets, Risk = 0.01 
+10                                            // belief_factor = 10
 ```
 
 - Running MAKER DAO market simulations,
-    - `python3 sim.py --config path/to/config --logdir path/to/log/directory` : Running this generates a file `sim-summary.pickle` inside the log directory
+    - `python3 sim.py --config path/to/config --logdir path/to/log/directory --days_per_config num_days_per_config` : Running this generates a file `sim-summary.pickle` inside the log directory
     which is used to generate useful plots.
     - `python3 plot_gen.py --data path/to/log/directory/sim-summary.pickle` : Running this generates several useful plots for the simulation. All generated plots would show up in a `plots`
     directory under the log directory.
